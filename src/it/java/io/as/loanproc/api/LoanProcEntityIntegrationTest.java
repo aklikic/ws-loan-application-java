@@ -2,6 +2,8 @@ package io.as.loanproc.api;
 
 import com.akkaserverless.javasdk.testkit.junit.AkkaServerlessTestKitResource;
 import io.as.Main;
+import io.as.loanproc.view.LoanProcByStatus;
+import io.as.loanproc.view.LoanProcByStatusModel;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -31,9 +33,11 @@ public class LoanProcEntityIntegrationTest {
    * Use the generated gRPC client to call the service through the Akka Serverless proxy.
    */
   private final LoanProcService client;
+  private final LoanProcByStatus view;
 
   public LoanProcEntityIntegrationTest() {
     client = testKit.getGrpcClient(LoanProcService.class);
+    view = testKit.getGrpcClient(LoanProcByStatus.class);
   }
 
   private LoanProcApi.ProcessCommand create(String loanAppId){
@@ -97,6 +101,8 @@ public class LoanProcEntityIntegrationTest {
     client.process(create(loanAppId)).toCompletableFuture().get(5, SECONDS);
     client.approve(LoanProcApi.ApproveCommand.newBuilder().setLoanAppId(loanAppId).setReviewerId(reviewerId).build()).toCompletableFuture().get(5, SECONDS);
     assertGet(loanAppId, LoanProcApi.LoanProcStatus.STATUS_APPROVED);
+    assertView(LoanProcApi.LoanProcStatus.STATUS_APPROVED,2);//1 from prior tests
+    assertView(LoanProcApi.LoanProcStatus.STATUS_DECLINED,1);//1 from prior tests
 
     String loanAppId2 = UUID.randomUUID().toString();
     client.process(create(loanAppId2)).toCompletableFuture().get(5, SECONDS);
@@ -104,5 +110,19 @@ public class LoanProcEntityIntegrationTest {
     String loanAppId3 = UUID.randomUUID().toString();
     client.process(create(loanAppId3)).toCompletableFuture().get(5, SECONDS);
 
+    assertView(LoanProcApi.LoanProcStatus.STATUS_READY_FOR_REVIEW,3);//1 from prior tests
+    assertView(LoanProcApi.LoanProcStatus.STATUS_APPROVED,2);
+
+  }
+
+  private void assertView(LoanProcApi.LoanProcStatus status, int expectedResults) throws Exception{
+    Thread.sleep(1000);//needed for the view eventual consistent update
+    LoanProcByStatusModel.GetLoanProcByStatusResponse response =
+            view.getLoanAppsByStatus(LoanProcByStatusModel.GetLoanProcByStatusRequest.newBuilder()
+                            .setStatusId(status.getNumber()).build())
+                    .toCompletableFuture().get(5,SECONDS);
+    assertNotNull(response);
+    assertEquals(expectedResults,response.getResultsCount());
+    assertFalse(response.getResultsList().stream().filter(l->l.getStatus()!=status).findAny().isPresent());
   }
 }
