@@ -90,19 +90,4 @@ public class LoanProcEntityIntegrationTest {
     assertGet(loanAppId, LoanProcApi.LoanProcStatus.STATUS_DECLINED);
   }
 
-  @Test
-  public void viewTest() throws Exception {
-    String loanAppId = UUID.randomUUID().toString();
-    String reviewerId = UUID.randomUUID().toString();
-    client.process(create(loanAppId)).toCompletableFuture().get(5, SECONDS);
-    client.approve(LoanProcApi.ApproveCommand.newBuilder().setLoanAppId(loanAppId).setReviewerId(reviewerId).build()).toCompletableFuture().get(5, SECONDS);
-    assertGet(loanAppId, LoanProcApi.LoanProcStatus.STATUS_APPROVED);
-
-    String loanAppId2 = UUID.randomUUID().toString();
-    client.process(create(loanAppId2)).toCompletableFuture().get(5, SECONDS);
-
-    String loanAppId3 = UUID.randomUUID().toString();
-    client.process(create(loanAppId3)).toCompletableFuture().get(5, SECONDS);
-
-  }
 }
