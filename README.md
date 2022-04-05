@@ -375,9 +375,9 @@ Push docker image to docker repository:
 ```
 mvn docker:push
 ```
-## Re-deploy service
+## Deploy service
 ```
-akkasls service redeploy loan-application
+akkasls service deploy loan-application my-docker-repo/loan-application:1.0-SNAPSHOT
 ```
 ## Test service in production
 Start processing:
@@ -471,9 +471,9 @@ Push docker image to docker repository:
 ```
 mvn docker:push
 ```
-## Re-deploy service
+## Deploy service
 ```
-akkasls service redeploy loan-application
+akkasls service deploy loan-application my-docker-repo/loan-application:1.0-SNAPSHOT
 ```
 
 ## Test service in production
@@ -554,9 +554,9 @@ Push docker image to docker repository:
 ```
 mvn docker:push
 ```
-## Re-deploy service
+## Deploy service
 ```
-akkasls service redeploy loan-application
+akkasls service deploy loan-application my-docker-repo/loan-application:1.0-SNAPSHOT
 ```
 <i><b>Note</b></i>: Replace `my-docker-repo` with your docker repository
 
